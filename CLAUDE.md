@@ -292,9 +292,9 @@ The following entries are pre-seeded to orient every new session:
 
 ### Chunking Strategy
 
-**Decision (2024-01):** Use recursive character splitting with `chunk\_size=512`, `chunk\_overlap=64`.
+**Decision (updated):** Use recursive character splitting with `chunk\_size=1000`, `chunk\_overlap=150`.
 
-* Rationale: 512 tokens fits in Claude's context alongside retrieved chunks without crowding the generator prompt. 64-token overlap prevents context loss at chunk boundaries.
+* Rationale: 1000 characters balances context density with retrieval precision for mixed document types. 150-character overlap prevents context loss at chunk boundaries.
 * Revisit if: retrieval recall drops below 0.7 on the eval set, or if source documents are highly structured (tables, code — consider semantic/section-based chunking instead).
 
 ### Embedding Model

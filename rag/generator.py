@@ -2,7 +2,6 @@ from typing import List
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 
 DEFAULT_RAG_PROMPT = ChatPromptTemplate.from_template("""\
 You are a helpful assistant. Answer the question using ONLY the context below.
@@ -16,31 +15,30 @@ Question: {question}
 Answer:"""
 )
 
+
 def build_llm(provider: str, model_name: str, api_key: str = ""):
     """Return an LLM object based on the provider config."""
     provider_lower = provider.lower()
+
     if provider_lower == "openai":
         from langchain_openai import ChatOpenAI
-        return ChatOpenAI(
-            model=model_name,
-            temperature=0,
-            openai_api_key=api_key,  # type: ignore
-        )
+        return ChatOpenAI(model=model_name, temperature=0, openai_api_key=api_key)  # type: ignore
 
     elif provider_lower == "anthropic":
         from langchain_anthropic import ChatAnthropic
-        return ChatAnthropic(
-            model=model_name,  # type: ignore
-            temperature=0,
-            anthropic_api_key=api_key,  # type: ignore
-        )
+        return ChatAnthropic(model=model_name, temperature=0, anthropic_api_key=api_key)  # type: ignore
 
     elif provider_lower == "ollama":
         from langchain_ollama import ChatOllama
         return ChatOllama(model=model_name, temperature=0)
 
+    elif provider_lower == "google":
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        return ChatGoogleGenerativeAI(model=model_name, temperature=0, google_api_key=api_key or None)  # type: ignore
+
     else:
-        raise ValueError(f"Unknown LLM_PROVIDER: {provider}")
+        raise ValueError(f"Unknown LLM_PROVIDER: {provider!r}")
+
 
 def format_docs(docs: List[Document]) -> str:
     """Concatenate retrieved chunks with source metadata as headers."""
@@ -52,17 +50,13 @@ def format_docs(docs: List[Document]) -> str:
         parts.append(f"{header}\n{doc.page_content}")
     return "\n\n".join(parts)
 
-def get_rag_chain(retriever, llm, prompt=None):
-    """Build and return the LangChain RAG pipeline chain using LCEL."""
+
+def get_rag_chain(llm, prompt=None):
+    """Build the RAG chain. Expects input dict {question, context} where context is pre-formatted.
+
+    The retriever is intentionally excluded from the chain so the caller retrieves once
+    and reuses the same docs for both source display and generation.
+    """
     if prompt is None:
         prompt = DEFAULT_RAG_PROMPT
-    
-    chain = (
-        RunnablePassthrough.assign(
-            context=RunnableLambda(lambda x: format_docs(retriever.invoke(x["question"])))
-        )
-        | prompt
-        | llm
-        | StrOutputParser()
-    )
-    return chain
+    return prompt | llm | StrOutputParser()
