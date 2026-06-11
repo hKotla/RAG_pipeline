@@ -38,9 +38,9 @@ class RAGConfig:
         if not self.llm_model:
             llm_defaults = {
                 "openai": "gpt-4o-mini",
-                "anthropic": "claude-3-5-haiku-20241022",
+                "anthropic": "claude-haiku-4-5-20251001",
                 "ollama": "llama3.2",
-                "google": "gemini-2.0-flash",
+                "google": "gemini-2.5-flash",
             }
             self.llm_model = llm_defaults.get(self.llm_provider, "")
 
@@ -49,6 +49,6 @@ class RAGConfig:
                 "openai": "text-embedding-3-small",
                 "huggingface": "sentence-transformers/all-MiniLM-L6-v2",
                 "ollama": "nomic-embed-text",
-                "google": "models/text-embedding-004",
+                "google": "models/gemini-embedding-001",
             }
             self.embedding_model = embedding_defaults.get(self.embedding_provider, "")

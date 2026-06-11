@@ -72,7 +72,7 @@ class RAGPipeline:
             web_urls=web_urls,
         )
         if not raw_docs:
-            print("⚠️ No documents loaded. Add paths or URLs to ingest.")
+            print("No documents loaded. Add paths or URLs to ingest.")
             return []
 
         chunks = chunk_documents(
@@ -83,7 +83,7 @@ class RAGPipeline:
 
         print(f"Embedding and indexing {len(chunks)} chunks... (this may take a moment)")
         self.vectorstore.add_documents(chunks)
-        print(f"✅ Index updated. Total documents in collection: {self.vectorstore._collection.count()}")
+        print(f"Index updated. Total documents in collection: {self.vectorstore._collection.count()}")
         return chunks
 
     def ask(self, question: str, show_sources: bool = True) -> str:
@@ -92,24 +92,24 @@ class RAGPipeline:
         context   = format_docs(retrieved)
         answer    = self.rag_chain.invoke({"question": question, "context": context})
 
-        print(f"❓ {question}")
-        print(f"\n💬 Answer:\n{answer}")
+        print(f"Q: {question}")
+        print(f"\nAnswer:\n{answer}")
 
         if show_sources:
-            print(f"\n📚 Sources ({len(retrieved)} chunks retrieved):")
+            print(f"\nSources ({len(retrieved)} chunks retrieved):")
             for i, doc in enumerate(retrieved, 1):
                 src     = doc.metadata.get("source", "unknown")
                 page    = doc.metadata.get("page", "")
                 loc     = f", p.{page}" if page != "" else ""
                 preview = doc.page_content[:120].replace("\n", " ")
-                print(f"  [{i}] {src}{loc} → {preview}...")
+                print(f"  [{i}] {src}{loc} -> {preview}...")
 
         return answer
 
     def evaluate(self, eval_cases: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Run standard keyword-based evaluation cases."""
         if not eval_cases:
-            print("ℹ️ Add evaluation cases to test your pipeline.")
+            print("Add evaluation cases to test your pipeline.")
             return {"passed": 0, "total": 0}
 
         print("Running evaluation...\n")
@@ -121,7 +121,7 @@ class RAGPipeline:
             hits      = [kw for kw in case["must_contain"] if kw.lower() in answer.lower()]
             ok        = len(hits) == len(case["must_contain"])
             passed   += ok
-            status    = "✅ PASS" if ok else "❌ FAIL"
+            status    = "PASS" if ok else "FAIL"
             print(f"{status}  Q: {case['question']}")
             if not ok:
                 missing = [kw for kw in case["must_contain"] if kw.lower() not in answer.lower()]
