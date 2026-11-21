@@ -1,6 +1,18 @@
 # RAG Pipeline — Climate Change in India
 
-A Retrieval-Augmented Generation (RAG) pipeline built from first principles in plain Python (no LangChain orchestration framework). It answers questions grounded in four Wikipedia articles about climate change in India, with citations back to the source chunks.
+[![CI](https://github.com/hKotla/RAG_pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/hKotla/RAG_pipeline/actions/workflows/ci.yml)
+
+A Retrieval-Augmented Generation (RAG) pipeline that answers questions grounded in four Wikipedia articles about climate change in India, with citations back to the source chunks. LangChain supplies the document loaders, recursive splitter, Chroma vector store, embedding and chat-model clients, and the prompt-to-answer chain. `RAGPipeline` ties those pieces together: ingest the corpus, retrieve with MMR, and return a grounded answer plus the source chunks.
+
+## What this project demonstrates
+
+Building that pipeline over a real corpus, and evaluating it with the same care as the implementation. A 10-question golden dataset mixes ordinary questions with adversarial and hallucination-bait cases the articles cannot answer. Reported scores are retrieval Precision@5 plus two LLM-as-judge metrics, faithfulness and answer relevance.
+
+<!-- TODO: replace the lines below with a demo screenshot or GIF and the live Streamlit URL. -->
+
+**Live demo:** TODO — add the hosted Streamlit link.
+
+**Screenshot / GIF:** TODO — add a demo image of the Streamlit app.
 
 ## Architecture
 
@@ -34,21 +46,36 @@ Steps 1–4 (load, chunk, embed, store) run once at ingest time and persist to `
 ## Repository layout
 
 ```
-RAG_Pipeline/
-├── rag/
-│   ├── config.py       # RAGConfig — providers, models, chunking, retrieval settings
-│   ├── ingest.py        # load_documents, chunk_documents, build_embeddings, get_vectorstore
-│   ├── retriever.py      # get_retriever (MMR, top_k=5)
-│   ├── generator.py      # build_llm, get_rag_chain, format_docs
-│   ├── pipeline.py        # RAGPipeline — ask(), ingest(), evaluate()
-│   ├── eval.py             # Precision@K, Faithfulness, Answer Relevance metrics
-│   └── query.py            # CLI: python -m rag.query "<question>"
+RAG_pipeline/
+├── .github/workflows/ci.yml   # ruff + pytest on push and pull_request
+├── app.py                     # Streamlit demo
 ├── evals/
-│   └── golden_dataset.py    # 10 hand-crafted Q&A cases (7 normal + 3 adversarial)
-├── tests/                     # pytest unit tests
-├── app.py                      # Streamlit demo app
-├── rag_pipeline.ipynb           # Step-by-step walkthrough notebook
-└── chroma_db/                    # Persisted vector index (348 chunks, gitignored)
+│   ├── __init__.py
+│   └── golden_dataset.py      # 10 hand-crafted Q&A cases (7 normal + 3 adversarial)
+├── rag/
+│   ├── __init__.py            # exports RAGConfig and RAGPipeline
+│   ├── config.py              # providers, models, chunking, retrieval settings
+│   ├── eval.py                # Precision@K, faithfulness, answer relevance
+│   ├── generator.py           # build_llm, get_rag_chain, format_docs
+│   ├── ingest.py              # load_documents, chunk, embeddings, Chroma
+│   ├── pipeline.py            # RAGPipeline — ingest(), ask(), evaluate()
+│   ├── query.py               # CLI: python -m rag.query "<question>"
+│   └── retriever.py           # get_retriever (MMR, top_k=5)
+├── tests/
+│   ├── test_eval.py           # metrics; the judge LLM is mocked
+│   ├── test_generator.py
+│   ├── test_ingest.py
+│   └── test_retriever.py
+├── .env.example               # key names only; copy to .env
+├── .gitattributes             # notebook counts as documentation, not Jupyter
+├── .gitignore
+├── CLAUDE.md                  # coding-agent notes
+├── LICENSE
+├── pyproject.toml             # ruff rules and pytest import path
+├── rag_pipeline.ipynb         # step-by-step walkthrough
+├── README.md
+├── requirements.txt           # full install (app, notebook, all providers)
+└── requirements-ci.txt        # lean install used by CI
 ```
 
 ## Setup
@@ -83,8 +110,12 @@ python -m rag.query "What are India's renewable energy targets?"
 **Tests:**
 
 ```bash
+pip install -r requirements-ci.txt
+ruff check .
 pytest tests/ -v
 ```
+
+GitHub Actions runs those same `ruff` and `pytest` commands. The tests mock the LLM judge, so they pass with no OpenAI or Anthropic key. `requirements-ci.txt` leaves out the heavy optional extras (PyTorch via sentence-transformers, Streamlit, and the live provider clients).
 
 ## Eval results
 

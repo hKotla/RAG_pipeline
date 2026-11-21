@@ -1,0 +1,12 @@
+# Lean install for GitHub Actions and for `pytest` / `ruff check`.
+# The unit tests import LangChain Core, the text splitter, and Chroma.
+# They do not call a live LLM, so the provider clients are omitted.
+# sentence-transformers (and its PyTorch dependency), Streamlit, and the
+# document loaders stay in requirements.txt for the app and the notebook.
+
+langchain-core>=0.3.0
+langchain-text-splitters>=0.3.0
+langchain-chroma>=0.1.4
+chromadb>=0.5.0
+pytest>=8.0.0
+ruff>=0.6.0

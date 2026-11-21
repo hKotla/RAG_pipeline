@@ -1,0 +1,15 @@
+# Tooling for local checks and GitHub Actions.
+# Does not change pipeline behaviour.
+
+[tool.pytest.ini_options]
+# `pytest` does not put the repo root on sys.path. Tests import `rag`.
+pythonpath = ["."]
+
+[tool.ruff]
+# The walkthrough notebook is documentation (see .gitattributes).
+extend-exclude = ["*.ipynb"]
+
+[tool.ruff.lint]
+# Pyupgrade (UP) and isort (I) would rewrite annotations and import order
+# across the package without changing behaviour.
+ignore = ["UP", "I"]
